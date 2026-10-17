@@ -104,7 +104,7 @@ export function Empty({ icon: Icon, title, body, action }: { icon: React.Compone
 
 export function ExportMenu({ title, rows, columns }: { title: string; rows: Row[]; columns?: string[] }) {
   const run = async (f: "csv" | "xlsx" | "pdf") => {
-    if (!rows.length) return toast.error("Nothing to export yet.");
+    if (!rows.length) { toast.error("Nothing to export yet."); return; }
     try { await exportRows(f, title, rows, columns); toast.success(`${title} exported`); } catch (e) { toast.error((e as Error).message); }
   };
   return (

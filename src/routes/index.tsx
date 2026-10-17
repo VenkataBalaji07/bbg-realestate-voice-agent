@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useStore, now } from "@/lib/store";
-import building from "@/assets/login-building.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -97,8 +96,7 @@ function Login() {
       </div>
 
       <div className="relative hidden overflow-hidden lg:block">
-        <img src={building} alt="Modern residential tower at dusk" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/20 to-transparent" />
+        <div className="absolute inset-0 bg-primary" />
         <div className="absolute bottom-0 p-14 text-primary-foreground">
           <div className="mb-3 h-px w-12 bg-gold" />
           <p className="max-w-md text-xl font-light leading-snug">Every enquiry answered in Telugu, every interested buyer followed up, every site visit on the calendar.</p>

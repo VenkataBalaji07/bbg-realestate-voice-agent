@@ -30,7 +30,8 @@ async function parseExcel(file: File, ext: "xlsx" | "xls"): Promise<RawTable> {
   const buf = await file.arrayBuffer();
   await yieldFrame();
   const wb = XLSX.read(buf, { type: "array" });
-  const ws = wb.Sheets[wb.SheetNames[0]];
+  const ws = wb.Sheets[wb.SheetNames[0] ?? ""];
+  if (!ws) throw new Error("No sheet found.");
   const data = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false, blankrows: false }) as unknown[][];
   return toTable(data.map((r) => r.map((c) => String(c ?? "").trim())), ext);
 }
@@ -50,9 +51,9 @@ async function parsePdf(file: File): Promise<RawTable> {
     for (const it of tc.items as { str: string; transform: number[] }[]) {
       if (!it.str?.trim()) continue;
       textChars += it.str.length;
-      const y = Math.round(it.transform[5]);
+      const y = Math.round(it.transform[5] ?? 0);
       const arr = byY.get(y) ?? [];
-      arr.push({ x: it.transform[4], s: it.str.trim() });
+      arr.push({ x: it.transform[4] ?? 0, s: it.str.trim() });
       byY.set(y, arr);
     }
     [...byY.entries()].sort((a, b) => b[0] - a[0]).forEach(([, items]) => {
@@ -84,7 +85,7 @@ async function parsePdf(file: File): Promise<RawTable> {
 
 function toTable(data: string[][], fileType: RawTable["fileType"]): RawTable {
   if (!data.length) throw new Error("The file is empty.");
-  const first = data[0];
+  const first = data[0] ?? [];
   const looksHeader = first.every((c) => !normalizePhone(c));
   const headers = looksHeader ? first.map((h, i) => h || `Column ${i + 1}`) : first.map((_, i) => `Column ${i + 1}`);
   const rows = looksHeader ? data.slice(1) : data;
@@ -114,6 +115,7 @@ export function buildPreview(t: RawTable, m: Mapping, existing: Set<string>, dnc
   const seen = new Set<string>();
   return t.rows.map((r, idx) => {
     const phoneRaw = r[m.phone] ?? "";
+    const hdr = (i: number) => t.headers[i] ?? `Column ${i + 1}`;
     const phone = normalizePhone(phoneRaw);
     let issue: RowIssue = "ok";
     if (!phoneRaw.trim()) issue = "missing";
@@ -123,7 +125,7 @@ export function buildPreview(t: RawTable, m: Mapping, existing: Set<string>, dnc
     else if (existing.has(phone)) issue = "existing";
     if (phone) seen.add(phone);
     const custom: Record<string, string> = {};
-    m.custom.forEach((i) => { if (r[i]) custom[t.headers[i]] = r[i]; });
+    m.custom.forEach((i) => { if (r[i]) custom[hdr(i)] = r[i]!; });
     return { idx, name: r[m.name] ?? "", phoneRaw, phone, location: m.location >= 0 ? r[m.location] ?? "" : "", custom, issue, include: issue === "ok" };
   });
 }

@@ -4,13 +4,13 @@ import type { CallRecord, Interest, Lead, LeadStatus, Sentiment } from "./types"
 
 const timers = new Map<string, ReturnType<typeof setInterval>>();
 
-function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]!; }
 
 function inHours(start: string, end: string) {
   const d = new Date();
   const m = d.getHours() * 60 + d.getMinutes();
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
+  const [sh = 0, sm = 0] = start.split(":").map(Number);
+  const [eh = 0, em = 0] = end.split(":").map(Number);
   return m >= sh * 60 + sm && m <= eh * 60 + em;
 }
 
